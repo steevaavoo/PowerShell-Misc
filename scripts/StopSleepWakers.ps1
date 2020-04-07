@@ -29,10 +29,10 @@ function Stop-SleepWakers {
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     Param(
         [Parameter(Mandatory = $false)]
-        [switch]$IncludeKeyboards = $false,
-        [Parameter(Mandatory = $false,
-            ValueFromPipeline = $true)]
-        [PSTypeName("Custom.SB.WakeArmedDevice")][Object[]]$DeviceName
+        [switch]$IncludeKeyboards = $false
+        # [Parameter(Mandatory = $false,
+        #     ValueFromPipeline = $true)]
+        # [PSTypeName("Custom.SB.WakeArmedDevice")][Object[]]$DeviceName
     )
 
     BEGIN {
@@ -68,10 +68,11 @@ function Stop-SleepWakers {
     } #process
 
     END {
-        Write-Verbose "All specified devices prevented from waking the computer from sleep."
-        Write-Verbose "If you wish to revert this operation, the log file path is: [$logfilename]"
-        Write-Verbose "Do so by using the command:"
-        Write-Verbose "Undo-DisableSleepWakers -LogFilePath $logfilename"
+        Get-Content $logfilename
+        Write-Host "All above devices prevented from waking the computer from sleep." -ForegroundColor Green
+        Write-Host "If you wish to revert this operation, the log file path is: [$logfilename]" -ForegroundColor Green
+        Write-Host "Do so by using the command:" -ForegroundColor Green
+        Write-Host "Undo-DisableSleepWakers -LogFilePath $logfilename" -ForegroundColor Yellow
     }
 
 } #function
@@ -96,7 +97,7 @@ function Undo-DisableSleepWakers {
 
     foreach ($wakedisableddevice in $wakedisableddevices) {
         if ($PSCmdlet.ShouldProcess("Device: [$wakedisableddevice]", "Enabling Wake from Sleep")) {
-            Write-Verbose "Re-enabling [$wakedisableddevice]..."
+            Write-Host "Re-enabling [$wakedisableddevice]..." -ForegroundColor Green
             powercfg -deviceenablewake "$wakedisableddevice"
         } #shouldprocess
     } #foreach
