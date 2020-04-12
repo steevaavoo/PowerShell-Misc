@@ -1,5 +1,9 @@
 # A script to disable all but keyboards from waking computer from sleep
 # Need to create an object with property "DeviceName" to filter out Keyboards
+#TODO: Expand "Get" function to show last thing to wake your PC.
+#TODO: Could include Scheduled jobs or Scheduled Tasks - is there a way to deal with them?
+# powercfg -lastwake <-- shows what last woke the computer
+# powercfg -requests <-- Shows what is currently keeping the computer awake
 
 function Get-WakeArmedDevices {
     BEGIN {
