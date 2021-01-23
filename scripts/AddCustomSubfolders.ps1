@@ -15,13 +15,13 @@
 $ParentFolder = "D:\TestParentFolder"
 
 # List of custom folders to inject
-$InjectFolders = "TEST1","TEST2","TEST3"
+$InjectFolders = "General Correspondence","Client Documents","Investments","Pension","Protection"
 
 # Get all the subfolders, one level down, into a variable
 $Folders = Get-ChildItem -Path $ParentFolder -Directory -Depth 0
 
 foreach ( $folder in $Folders ) {
     foreach ($InjectFolder in $InjectFolders) {
-    New-Item -Path $($folder.FullName) -Name $InjectFolder -ItemType Directory
+    New-Item -Path "$($folder.FullName)" -Name $InjectFolder -ItemType Directory
     }
 }
