@@ -33,7 +33,7 @@ function Get-MatrixInfo {
     $tpm = Get-Tpm
     $drive = Get-PhysicalDisk -DeviceNumber 0
 
-    [PSCustomObject]@{
+    $matrixinfo = [PSCustomObject]@{
         PSTypeName       = "Custom.SB.MatrixInfo"
         EncryptionStatus = $bitlockerinfo.ProtectionStatus
         TpmPresent       = $tpm.TpmPresent
@@ -41,7 +41,13 @@ function Get-MatrixInfo {
         ComputerName     = $computerinfo.CsName
         DriveType        = $drive.MediaType
         DriveMake        = $drive.FriendlyName
-        DriveCapacity    = $drive.Size
+        DriveCapacity    = [math]::Round($drive.Size / 1GB, 0)
     }
+
+    $matrixinfo | Export-Csv -Path ~\desktop\test.csv -Delimiter "`t"
+    Get-Content ~\desktop\test.csv | Select-Object -Skip 1 | Set-Clipboard
+
+    $matrixinfo
+    Write-Host "Above info copied into clipboard. Paste into Matrix where appropriate." -ForegroundColor Green
 
 }
