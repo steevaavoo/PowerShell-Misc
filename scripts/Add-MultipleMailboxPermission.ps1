@@ -1,6 +1,6 @@
 $mailboxname =
 $displayname =
-$($newmailbox.alias) =
+$newmailbox.alias =
 $secretary =
 
 $newmailboxes = Import-Csv -path ~\desktop\newmailboxes.csv
