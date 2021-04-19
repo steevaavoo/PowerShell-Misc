@@ -1,4 +1,4 @@
-$newitdeptuser = ~"INSERT NAME"
+$newitdeptuser = "INSERT NAME"
 
 New-LocalUser -FullName $newitdeptuser -Name $newitdeptuser -PasswordNeverExpires
 
