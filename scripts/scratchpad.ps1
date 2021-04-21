@@ -16,5 +16,3 @@ domain-co-uk
 domaincouk.onmicrosoft.com
 
 _dmarc.domain.co.uk  3600  IN  TXT  "v=DMARC1; p=none; pct=100"
-
-

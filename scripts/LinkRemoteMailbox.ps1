@@ -1,33 +1,47 @@
-# Run the below to add Exchange Management Tools to standard PowerShell Terminal - NOTE only run on Exchange server
+# Run the below to add Exchange Management Tools to standard PowerShell Terminal via PS Remoting to the Exchange URI
 # This, along with Connect-ExchangeOnline would allow this entire process to be run in one session.
-Add-PSSnapin Microsoft.Exchange.Management.PowerShell.SnapIn
+# MAKE SURE TO UPDATE ALL PLACEHOLDERS and check variable values at each stage
+$connectionuri = "http://servername.domain.com/PowerShell"
+$session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri $connectionuri -Authentication Kerberos
+Import-PSSession $session
 Import-Module ActiveDirectory
 
 # Make sure the appropriate module is installed to run the below.
-Connect-ExchangeOnline
+# Connect-ExchangeOnline - not needed in this stage
 Connect-MsolService
 
 # Prep (Phase 0) - correct the placeholders below before running
 
-$userprincipalname = 'user.name@domain.com'
-$mailbox = Get-Mailbox -Identity $userprincipalname
+$username = 'first.last'
+$domain = 'contoso.com'
+$userprincipalname = "$username@$domain"
+# $mailbox = Get-Mailbox -Identity $userprincipalname
 $msoluser = Get-MsolUser -UserPrincipalName $userprincipalname
-# companyinitialname Example "contosocouk" - the .onmicrosoft.com is automatically appended below
-$companyinitialname = "initialnameoftenant"
-$remoteroutingaddress = "$companyinitialname.onmicrosoft.com"
+# companyinitialname: Example "contosocouk" - the .mail.onmicrosoft.com is automatically appended below
+# (this is the correct address as it is set thusly in the Email Address Policy on the HYB server)
+$companyinitialname = "contosocouk"
+$remoteroutingdomain = "$companyinitialname.mail.onmicrosoft.com"
+$remoteroutingaddress = "$username@$remoteroutingdomain"
 
-# Filtering out the Company Initial Name-based addresses - the $adproxyaddresses variable will be used when creating the local AD user - the correct SMTP address for a successful match should already be in place as a result of this
-$adproxyaddresses = $msoluser.ProxyAddresses | Where-Object { $_ -notlike '*companyinitialname*' }
+# Filtering out the Company Initial Name-based addresses - the $adproxyaddresses variable will be used when creating
+# the local AD user - the correct SMTP address for a successful match should already be in place as a result of this
+# Moreover, the remote routing address is added automatically by the email address policy when the account is linked
+# in the final steps below
+$adproxyaddresses = $msoluser.ProxyAddresses | Where-Object { $_ -notlike "*$companyinitialname*" }
 
 # Phase 1 - do soon after AAD Sync completes, to allow time for troubleshooting/checks
+
+# Set a good user password here as the account will start enabled - match it to existing 365 password
+$password = "TESTING123!"
+$SecurePassword = $password | ConvertTo-SecureString -AsPlainText -Force
 
 # Be sure to change the Path below to the appropriate OU
 $aduserparams = @{
     Name              = $($msoluser.DisplayName);
     SamAccountName    = "$($msoluser.FirstName).$($msoluser.LastName)";
-    Enabled           = $false
-    # Path = "OU=Users,DC=Domain,DC=local"
-    # AccountPassword = $password
+    Enabled           = $true
+    # Path = "OU=Company Users,DC=Domain,DC=local"
+    AccountPassword   = $SecurePassword
     GivenName         = $($msoluser.FirstName);
     Surname           = $($msoluser.LastName);
     DisplayName       = $($msoluser.DisplayName);
@@ -51,9 +65,9 @@ New-AdUser @aduserparams -WhatIf
 Set-ADUser $aduserparams.samAccountName -replace @{proxyaddresses = $adproxyaddresses }
 
 # Add user to standard groups (rename placeholders accordingly using shown syntax)
-$groups = 'group1','group2','group3'
+$groups = 'group1', 'group2', 'group3'
 
-foreach($group in $groups){
+foreach ($group in $groups) {
     Add-ADGroupMember -Identity $group -Members $aduserparams.samAccountName
 }
 
@@ -62,13 +76,18 @@ foreach($group in $groups){
 # Phase 2 - do after the mailbox is linked successfully (after AD Sync)
 
 # Run the below on Exchange Online to get the Remote Mailbox GUID:
-# Connect-ExchangeOnline
+Connect-ExchangeOnline
+
 Get-Mailbox $userprincipalname | Format-List ExchangeGuid
 $remoteguid = Get-Mailbox $userprincipalname | Select-Object -ExpandProperty ExchangeGuid
 
+# Do the below to avoid remoting confusion between Exchange Online and On-Prem
+Get-PSSession | Remove-PSSession
+
 # Run the below on Hybrid Server Exchange Powershell to link the local User to the remote mailbox - this will allow local management of the mailbox
-Enable-RemoteMailbox $userprincipalname -RemoteRoutingAddress $remoteroutingaddress
+$session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri $connectionuri -Authentication Kerberos
+Import-PSSession $session
 
-Set-RemoteMailbox $userprincipalname -ExchangeGuid $remoteguid.Guid
+Enable-RemoteMailbox $username -RemoteRoutingAddress $remoteroutingaddress
 
-#TODO: Script something to change the emails for all Contraflex and Manuplas users to aisltd.com (the AD ones can be done via Email Address Policy)
+Set-RemoteMailbox $username -ExchangeGuid $remoteguid.Guid
