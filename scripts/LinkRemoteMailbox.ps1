@@ -57,6 +57,7 @@ $aduserparams = @{
     Country           = $($msoluser.Country);
 }
 
+#TODO Here's a Mailbox Property worth knowing! "IsDirSynced"
 
 # Create user with above splatted parameters
 New-AdUser @aduserparams -WhatIf
