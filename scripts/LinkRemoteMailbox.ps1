@@ -1,7 +1,7 @@
-# Run the below to add Exchange Management Tools to standard PowerShell Terminal via PS Remoting to the Exchange URI
+# Run the below to add Exchange Management Tools to standard PowerShell Terminal via PS Remoting to the Exchange INTERNAL URI
 # This, along with Connect-ExchangeOnline would allow this entire process to be run in one session.
 # MAKE SURE TO UPDATE ALL PLACEHOLDERS and check variable values at each stage
-$connectionuri = "http://servername.domain.com/PowerShell"
+$connectionuri = "http://servername.domain.local/PowerShell"
 $session = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri $connectionuri -Authentication Kerberos
 Import-PSSession $session
 Import-Module ActiveDirectory
