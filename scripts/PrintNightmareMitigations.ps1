@@ -23,6 +23,8 @@ $Acl = (Get-Item $Path).GetAccessControl('Access')
 $Ar = New-Object  System.Security.AccessControl.FileSystemAccessRule("System", "Modify", "ContainerInherit, ObjectInherit", "None", "Deny")
 $Acl.AddAccessRule($Ar)
 Set-Acl $Path $Acl
+# Verify
+(Get-Acl $Path).Access
 
 # ACL Deny Remove
 
@@ -31,3 +33,5 @@ $Acl = (Get-Item $Path).GetAccessControl('Access')
 $Ar = New-Object System.Security.AccessControl.FileSystemAccessRule("System", "Modify", "ContainerInherit, ObjectInherit", "None", "Deny")
 $Acl.RemoveAccessRule($Ar)
 Set-Acl $Path $Acl
+# Verify
+(Get-Acl $Path).Access
