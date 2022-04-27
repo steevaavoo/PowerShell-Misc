@@ -1,4 +1,20 @@
 function Start-LmcRdpSession {
+    <#
+    .SYNOPSIS
+        Runs an LM Compatibility Level check, fixes the level if required, then executes the specified RDP file.
+    .DESCRIPTION
+        Runs an LM Compatibility Level check, fixes the level if required, then executes the specified RDP file.
+    .PARAMETER RdpFileName
+        The path to the RDP file you wish to execute with this function.
+
+    .EXAMPLE
+        Start-LmcRdpSession -RdpFileName 'c:\users\user\downloads\computername.rdp'
+
+        Runs the LM Compatibility Level check, fixes the level if required, then executes the specified RDP file.
+    .NOTES
+        Maintainer: Steve Baker
+    #>
+
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory = $true)]
